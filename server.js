@@ -39,7 +39,7 @@ app.use(flash());
 
 const cartRoutes = require("./routes/cart.routes");
 const {createProduct, getAllProducts, getOneProduct, updateProduct, deleteProduct, addReview, getAdminProducts} = require("./controllers/product.controller");
-const { register, login } = require("./models/user.controller");
+const { register, login } = require("./controllers/user.controller");
 const userAuth = require("./middleware/user.middleware");
 const { addAdmin, adminLogin, profilePage} = require("./controllers/admin.controller");
 const adminAuth = require("./middleware/admin")
