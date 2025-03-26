@@ -15,12 +15,14 @@
     "connect-flash": "^0.1.1",
     "connect-mongo": "^5.1.0",
     "cors": "^2.8.5",
+    "dns": "^0.2.2",
     "dotenv": "^16.4.7",
     "ejs": "^3.1.10",
     "express": "^4.21.2",
     "express-session": "^1.18.1",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.9.5",
+    "mongodb": "^6.15.0",
+    "mongoose": "^8.13.0",
     "util": "^0.12.5"
   }
 }

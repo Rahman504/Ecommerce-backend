@@ -9,7 +9,7 @@ const flash = require("connect-flash");
 
 
 
-mongoose.connect("mongodb://127.0.0.1:27017/city_shop")
+mongoose.connect(process.env.DB_URL)
 .then(() => {
     console.log("Database connected successfully");
 })
