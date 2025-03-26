@@ -18,7 +18,7 @@ mongoose.connect(process.env.DB_URL)
     
 })
 const corsConfig = {
-    origin: true,
+    origin: process.env.FRONTEND_URL || "https://city-shop-ecommerce.vercel.app",
     credentials: true,
     allowHeaders: [
       "Origin",
