@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const ProductSchema = new mongoose.Schema({
     name: {type: "String", required: true, minLength: 3},
-    description: {type: "String", required: true, maxLength: 1000},
+    description: {type: "String", required: true, maxLength: 10000},
     price: {type: Number},
     discount: {type: Number, default: 0},
     discountedPrice: {type: Number},
