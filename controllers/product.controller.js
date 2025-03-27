@@ -17,7 +17,7 @@ const createProduct = async (req, res) => {
             return res.status(400).json({ message: "A required field is missing" });
         } else if (name.length < 3) {
             return res.status(400).json({ message: "Product name must be at least 3 characters long" });
-        } else if (description.length > 1000) {
+        } else if (description.length > 100000) {
             return res.status(400).json({ message: "Description cannot exceed 1000 characters" });
         }
 
