@@ -7,7 +7,12 @@ const ProductSchema = new mongoose.Schema({
     discount: {type: Number, default: 0},
     discountedPrice: {type: Number},
     imageUrl: {type: [String], required: true},
-    adminId: { type: mongoose.Schema.Types.ObjectId, ref: "Admin", required: true }
+    adminId: { type: mongoose.Schema.Types.ObjectId, ref: "Admin", required: true },
+    countInStock: { 
+        type: Number, 
+        required: true, 
+        default: 10
+    }
 }, {timestamps: true})
 
 

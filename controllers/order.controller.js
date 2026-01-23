@@ -1,6 +1,7 @@
 const axios = require("axios");
 const Order = require("../models/order.model");
 const crypto = require("crypto");
+const Product = require("../models/product.model"); 
 
 exports.verifyOrder = async (req, res) => {
     const { paymentReference, cart, shippingAddress, amount } = req.body;
@@ -61,7 +62,7 @@ exports.paystackWebhook = async (req, res) => {
     try {
         const secret = process.env.TEST_SECRET_KEY;
         if (!secret) {
-            console.error("WEBHOOK ERROR: TEST_SECRET_KEY is missing in Render Environment Variables");
+            console.error("WEBHOOK ERROR: TEST_SECRET_KEY is missing");
             return res.sendStatus(500);
         }
 
@@ -70,7 +71,7 @@ exports.paystackWebhook = async (req, res) => {
                            .digest('hex');
 
         if (hash !== req.headers['x-paystack-signature']) {
-            console.warn("WEBHOOK WARNING: Invalid signature received");
+            console.warn("WEBHOOK WARNING: Invalid signature");
             return res.sendStatus(400); 
         }
 
@@ -99,10 +100,17 @@ exports.paystackWebhook = async (req, res) => {
                     paidAt: Date.now(),
                     status: "Paid"
                 });
+
+                await Promise.all(formattedItems.map(async (item) => {
+                    await Product.findByIdAndUpdate(
+                        item.product, 
+                        { $inc: { countInStock: -item.qty } } 
+                    );
+                }));
                 
-                console.log(`Webhook Success: Order ${reference} saved to database.`);
+                console.log(`Webhook Success: Order ${reference} saved and stock updated.`);
             } else {
-                console.log(`Webhook: Order ${reference} already exists, skipping.`);
+                console.log(`Webhook: Order ${reference} already exists.`);
             }
         }
 
