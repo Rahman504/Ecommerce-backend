@@ -1,5 +1,6 @@
 const axios = require("axios");
 const Order = require("../models/order.model");
+const crypto = require("crypto");
 
 exports.verifyOrder = async (req, res) => {
     const { reference, cart, shippingAddress, amount } = req.body;
@@ -54,6 +55,48 @@ exports.verifyOrder = async (req, res) => {
         res.status(500).json({ message: "Server Error: " + error.message });
     }
 };
+
+
+exports.paystackWebhook = async (req, res) => {
+    try {
+        const hash = crypto.createHmac('sha512', process.env.PAYSTACK_SECRET_KEY)
+                           .update(JSON.stringify(req.body))
+                           .digest('hex');
+
+        if (hash !== req.headers['x-paystack-signature']) {
+            return res.sendStatus(400); 
+        }
+
+        const event = req.body;
+
+        if (event.event === 'charge.success') {
+            const { reference, metadata } = event.data;
+
+            const existingOrder = await Order.findOne({ paymentReference: reference });
+            
+            if (!existingOrder) {
+                await Order.create({
+                    user: metadata.user_id,
+                    orderItems: metadata.cart_items,
+                    shippingAddress: metadata.shipping_address,
+                    totalPrice: event.data.amount / 100,
+                    paymentReference: reference,
+                    status: "Paid"
+                });
+                console.log(`Webhook: Order ${reference} saved successfully.`);
+            }
+        }
+
+        res.sendStatus(200);
+    } catch (error) {
+        console.error("Webhook Error:", error);
+        res.sendStatus(500);
+    }
+};
+
+
+
+
 exports.getMyOrders = async (req, res) => {
     try {
         const orders = await Order.find({ user: req.user.id }).sort({ createdAt: -1 });

@@ -21,6 +21,7 @@ const orderSchema = new mongoose.Schema({
         email: { type: String }
     },
     totalPrice: { type: Number, required: true },
+    paymentReference: { type: String, required: true, unique: true },
     isPaid: { type: Boolean, default: false },
     paidAt: { type: Date }
 }, { timestamps: true });
