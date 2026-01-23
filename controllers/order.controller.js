@@ -40,7 +40,7 @@ exports.verifyOrder = async (req, res) => {
                 isPaid: true,
                 paidAt: Date.now(),
                 paymentResult: {
-                    id: reference,
+                    id: paymentReference,
                     status: "success",
                     email: response.data.data.customer.email
                 }
@@ -52,19 +52,25 @@ exports.verifyOrder = async (req, res) => {
             return res.status(400).json({ message: "Paystack did not confirm payment" });
         }
     } catch (error) {
-        console.error("Verification Error:", error.message);
-        res.status(500).json({ message: "Server Error: " + error.message });
+        console.error("Verification Error:", error.response?.data || error.message);
+        res.status(500).json({ message: "Server Error: " + (error.response?.data?.message || error.message) });
     }
 };
 
-
 exports.paystackWebhook = async (req, res) => {
     try {
-        const hash = crypto.createHmac('sha512', process.env.PAYSTACK_SECRET_KEY)
+        const secret = process.env.TEST_SECRET_KEY;
+        if (!secret) {
+            console.error("WEBHOOK ERROR: TEST_SECRET_KEY is missing in Render Environment Variables");
+            return res.sendStatus(500);
+        }
+
+        const hash = crypto.createHmac('sha512', secret) 
                            .update(JSON.stringify(req.body))
                            .digest('hex');
 
         if (hash !== req.headers['x-paystack-signature']) {
+            console.warn("WEBHOOK WARNING: Invalid signature received");
             return res.sendStatus(400); 
         }
 
@@ -82,21 +88,20 @@ exports.paystackWebhook = async (req, res) => {
                     shippingAddress: metadata.shipping_address,
                     totalPrice: event.data.amount / 100,
                     paymentReference: reference,
+                    isPaid: true,
+                    paidAt: Date.now(),
                     status: "Paid"
                 });
-                console.log(`Webhook: Order ${reference} saved successfully.`);
+                console.log(`Webhook Success: Order ${reference} created.`);
             }
         }
 
         res.sendStatus(200);
     } catch (error) {
-        console.error("Webhook Error:", error);
+        console.error("Webhook Internal Error:", error);
         res.sendStatus(500);
     }
 };
-
-
-
 
 exports.getMyOrders = async (req, res) => {
     try {
