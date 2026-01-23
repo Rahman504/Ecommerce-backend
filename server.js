@@ -45,11 +45,14 @@ const userAuth = require("./middleware/user.middleware");
 const { addAdmin, adminLogin, profilePage} = require("./controllers/admin.controller");
 const adminAuth = require("./middleware/admin")
 const Cart = require("./models/cart.model"); 
+const orderRoutes = require("./routes/order.routes");
 
 app.get("/", (req, res) => {
     res.json({message: "Hello World"});
 })
 
+
+app.use("/api/orders", orderRoutes);
 app.use("/api/cart", cartRoutes); 
 app.post("/api/products", adminAuth, createProduct)
 app.get("/api/products", getAllProducts)
