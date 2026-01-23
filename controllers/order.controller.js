@@ -82,23 +82,33 @@ exports.paystackWebhook = async (req, res) => {
             const existingOrder = await Order.findOne({ paymentReference: reference });
             
             if (!existingOrder) {
+                const formattedItems = metadata.cart_items.map(item => ({
+                    name: item.name,
+                    qty: Number(item.qty),
+                    price: Number(item.price),
+                    product: item.product
+                }));
+
                 await Order.create({
                     user: metadata.user_id,
-                    orderItems: metadata.cart_items,
+                    orderItems: formattedItems,
                     shippingAddress: metadata.shipping_address,
-                    totalPrice: event.data.amount / 100,
+                    totalPrice: event.data.amount / 100, 
                     paymentReference: reference,
                     isPaid: true,
                     paidAt: Date.now(),
                     status: "Paid"
                 });
-                console.log(`Webhook Success: Order ${reference} created.`);
+                
+                console.log(`Webhook Success: Order ${reference} saved to database.`);
+            } else {
+                console.log(`Webhook: Order ${reference} already exists, skipping.`);
             }
         }
 
         res.sendStatus(200);
     } catch (error) {
-        console.error("Webhook Internal Error:", error);
+        console.error("Webhook Internal Error:", error.message);
         res.sendStatus(500);
     }
 };
