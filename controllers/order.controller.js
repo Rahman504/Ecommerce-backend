@@ -3,7 +3,7 @@ const Order = require("../models/order.model");
 const crypto = require("crypto");
 
 exports.verifyOrder = async (req, res) => {
-    const { reference, cart, shippingAddress, amount } = req.body;
+    const { paymentReference, cart, shippingAddress, amount } = req.body;
 
     try {
         if (!req.user || !req.user.id) {
@@ -11,7 +11,7 @@ exports.verifyOrder = async (req, res) => {
         }
 
         const response = await axios.get(
-            `https://api.paystack.co/transaction/verify/${reference}`,
+            `https://api.paystack.co/transaction/verify/${paymentReference}`,
             {
                 headers: {
                     Authorization: `Bearer ${process.env.TEST_SECRET_KEY}`,
@@ -36,6 +36,7 @@ exports.verifyOrder = async (req, res) => {
                     phone: shippingAddress.phone
                 },
                 totalPrice: amount,
+                paymentReference: paymentReference,
                 isPaid: true,
                 paidAt: Date.now(),
                 paymentResult: {
