@@ -10,8 +10,7 @@ const ProductSchema = new mongoose.Schema({
     adminId: { type: mongoose.Schema.Types.ObjectId, ref: "Admin", required: true },
     countInStock: { 
         type: Number, 
-        required: true, 
-        default: 10
+        required: true
     }
 }, {timestamps: true})
 
