@@ -10,7 +10,7 @@ const userAuth = (req, res, next) => {
     }
 
     try {
-        const secret = process.env.SECRET_KEY || "default_secret";
+        const secret = process.env.JWT_SECRET || "default_secret";
         const userData = jwt.verify(token, secret);
         if (!userData || !userData.id) {
             return res.status(401).json({ message: "Invalid token. Please log in again." });

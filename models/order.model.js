@@ -15,6 +15,11 @@ const orderSchema = new mongoose.Schema({
         city: { type: String, required: true },
         phone: { type: String, required: true }
     },
+    status: { 
+        type: String, 
+        default: "Paid", 
+        enum: ["Paid", "Shipped", "Delivered", "Cancelled"] 
+    },
     paymentResult: {
         id: { type: String },
         status: { type: String },

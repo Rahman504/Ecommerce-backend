@@ -58,7 +58,7 @@ const login = (req, res) => {
         }
 
         const userObj = {id: user._id};
-        const token = jwt.sign(userObj, process.env.SECRET_KEY || "default_secret", { expiresIn: "24h" });
+        const token = jwt.sign(userObj, process.env.JWT_SECRET, { expiresIn: "24h" });
         res.status(200).json({ message: "Login successful", token, userId: user._id });
 
             return;

@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken");
 
 const addAdmin = async (req, res) => {
         const { firstName, lastName, email, password } = req.body;
-    if (req.body.secret !== process.env.ADMIN_SECRET) {
+    if (req.body.secret !== process.env.JWT_SECRET) {
         return res.status(403).json({ message: "Unauthorized access" });
     }
     try {

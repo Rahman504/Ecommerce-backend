@@ -6,7 +6,7 @@ const addToCart = async (req, res) => {
     try {
         const token = req.headers.authorization?.split(" ")[1];
         if (!token) return res.status(401).json({ message: "Unauthorized" });
-        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const userId = decoded.id;
         let cart = await Cart.findOne({ user: userId });
         if (!cart) {
@@ -30,7 +30,7 @@ const getCart = async (req, res) => {
     try {
         const token = req.headers.authorization?.split(" ")[1];
         if (!token) return res.status(401).json({ message: "Unauthorized" });
-        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const cart = await Cart.findOne({ user: decoded.id }).populate("items.product");
         if (!cart) return res.status(200).json({ cart: [] });
         res.status(200).json({ cart: cart.items });
@@ -42,7 +42,7 @@ const getCart = async (req, res) => {
 const updateCartQuantity = async (req, res) => {
     try {
         const token = req.headers.authorization?.split(" ")[1];
-        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const { productId, quantity } = req.body;
         const cart = await Cart.findOne({ user: decoded.id });
         if (!cart) return res.status(404).json({ message: "Cart not found" });
@@ -60,7 +60,7 @@ const updateCartQuantity = async (req, res) => {
 const removeFromCart = async (req, res) => {
     try {
         const token = req.headers.authorization?.split(" ")[1];
-        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const { productId } = req.params;
         const cart = await Cart.findOne({ user: decoded.id });
         if (!cart) return res.status(404).json({ message: "Cart not found" });
@@ -75,7 +75,7 @@ const removeFromCart = async (req, res) => {
 const clearCart = async (req, res) => {
     try {
         const token = req.headers.authorization?.split(" ")[1];
-        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const cart = await Cart.findOne({ user: decoded.id });
         if (cart) {
             cart.items = [];

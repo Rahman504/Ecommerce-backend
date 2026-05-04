@@ -37,12 +37,10 @@ exports.verifyOrder = async (req, res) => {
 
             const savedOrder = await newOrder.save();
 
-            // Reduce Stock
             await Promise.all(orderItems.map(async (item) => {
                 await Product.findByIdAndUpdate(item.product, { $inc: { countInStock: -item.qty } });
             }));
 
-            // Send Email
             await sendReceipt(response.data.data.customer.email, savedOrder);
 
             return res.status(201).json(savedOrder);
@@ -89,12 +87,33 @@ exports.paystackWebhook = async (req, res) => {
     }
 };
 
-exports.getAllOrders = async (req, res) => {
+exports.getAdminOrders = async (req, res) => {
     try {
-        const orders = await Order.find().populate("user", "name email").sort({ createdAt: -1 });
-        res.status(200).json(orders);
+        // 1. Identify which admin is making the request
+        const currentAdminId = req.adminId;
+
+        // 2. Find all products belonging to this admin
+        const myProducts = await Product.find({ adminId: currentAdminId }).select("_id");
+        const myProductIds = myProducts.map(p => p._id.toString());
+
+        // 3. Find orders that contain at least one of these products
+        const orders = await Order.find({
+            "orderItems.product": { $in: myProductIds }
+        }).populate("user", "firstName lastName email");
+
+        // 4. Filter the items within each order
+        // This ensures the admin doesn't see other sellers' items in the same order
+        const filteredOrders = orders.map(order => {
+            const orderObj = order.toObject();
+            orderObj.orderItems = orderObj.orderItems.filter(item => 
+                myProductIds.includes(item.product.toString())
+            );
+            return orderObj;
+        });
+
+        res.status(200).json(filteredOrders);
     } catch (error) {
-        res.status(500).json({ message: "Error fetching orders" });
+        res.status(500).json({ message: "Error fetching your specific orders", error: error.message });
     }
 };
 
@@ -102,10 +121,25 @@ exports.updateOrderStatus = async (req, res) => {
     try {
         const { id } = req.params;
         const { status } = req.body;
-        const updatedOrder = await Order.findByIdAndUpdate(id, { status }, { new: true });
+
+        if (!id || !status) {
+            return res.status(400).json({ message: "Missing Order ID or Status" });
+        }
+
+        const updatedOrder = await Order.findByIdAndUpdate(
+            id, 
+            { $set: { status: status } },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedOrder) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+
         res.status(200).json(updatedOrder);
     } catch (error) {
-        res.status(500).json({ message: "Error updating status" });
+        console.error("Update Error:", error);
+        res.status(500).json({ message: "Error updating status", error: error.message });
     }
 };
 

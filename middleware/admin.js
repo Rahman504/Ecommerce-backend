@@ -9,7 +9,7 @@ const adminAuth = (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.ADMIN_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.adminId = decoded.id;; 
         next();
     } catch (error) {
